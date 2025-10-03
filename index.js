@@ -1,5 +1,6 @@
 const { Client, GatewayIntentBits, Partials, Events, InteractionType } = require('discord.js');
 const token = process.env.TOKEN;
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -13,15 +14,18 @@ client.once(Events.ClientReady, () => {
   console.log(`Bot connecté en tant que ${client.user.tag}`);
 });
 
+// Répond "tg" à chaque message non-bot
 client.on(Events.MessageCreate, (message) => {
   if (!message.author.bot) {
     message.reply('tg');
   }
 });
 
+// Gère les commandes slash
 client.on(Events.InteractionCreate, async interaction => {
   if (interaction.type !== InteractionType.ApplicationCommand) return;
 
+  // /blague
   if (interaction.commandName === 'blague') {
     const blagues = [
       'Pourquoi les canards ont-ils autant de plumes ? Pour couvrir leur derrière.',
@@ -30,6 +34,22 @@ client.on(Events.InteractionCreate, async interaction => {
     ];
     const blague = blagues[Math.floor(Math.random() * blagues.length)];
     await interaction.reply(blague);
+  }
+
+  // /insulte
+  else if (interaction.commandName === 'insulte') {
+    const insultes = [
+      'T’es aussi utile qu’un chargeur Nokia en 2025.',
+      'Ton QI est en mode avion.',
+      'Même un bot écrit mieux que toi.'
+    ];
+    const insulte = insultes[Math.floor(Math.random() * insultes.length)];
+    await interaction.reply(insulte);
+  }
+
+  // /ping
+  else if (interaction.commandName === 'ping') {
+    await interaction.reply('pong');
   }
 });
 
