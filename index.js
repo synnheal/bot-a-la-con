@@ -12,6 +12,9 @@ const client = new Client({
 
 const prefix = '!';
 
+// petit stockage anti-spam
+const userMessages = new Map();
+
 client.once(Events.ClientReady, () => {
   console.log(`✅ Bot connecté en tant que ${client.user.tag}`);
 });
@@ -21,14 +24,49 @@ client.on(Events.MessageCreate, async message => {
 
   const content = message.content.toLowerCase();
 
-  // Réponse automatique si "black" est dans le message
+  // 🤬 si on ping le bot
+  if (message.mentions.has(client.user)) {
+    const insultes = [
+      'Quoi ?! tu me ping encore sale clochard ?',
+      'T’es lourd toi, va faire tes devoirs.',
+      'Encore toi ?! J’t’ai dit arrête de me ping.',
+      'Oh l’autre il croit j’ai que ça à faire…'
+    ];
+    return message.reply(insultes[Math.floor(Math.random() * insultes.length)]);
+  }
+
+  // 🤬 si le message est trop long
+  if (content.length > 150) {
+    return message.reply('Abrege frere t’écris trop 💤');
+  }
+
+  // 🤬 si "black" est dans le message
   if (content.includes('black')) {
     return message.reply('https://tenor.com/view/kunta-kinte-roots-gif-19853733');
   }
 
-  // Commandes préfixées
-  if (!content.startsWith(prefix)) return;
+  // 🤬 si "quoi" dans le message
+  if (content.includes('quoi')) {
+    return message.reply('feur.');
+  }
 
+  // 🤬 si spam / trop de messages rapprochés
+  const now = Date.now();
+  if (!userMessages.has(message.author.id)) {
+    userMessages.set(message.author.id, []);
+  }
+  const timestamps = userMessages.get(message.author.id);
+  timestamps.push(now);
+  // ne garde que les 10 dernières secondes
+  const filtered = timestamps.filter(t => now - t < 10000);
+  userMessages.set(message.author.id, filtered);
+
+  if (filtered.length >= 5) {
+    return message.reply('FTG tu spam trop 🤡');
+  }
+
+  // Commandes prefixées
+  if (!content.startsWith(prefix)) return;
   const args = content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
 
@@ -54,7 +92,5 @@ client.on(Events.MessageCreate, async message => {
     message.reply('🏓 pong');
   }
 });
-
-
-
+  
 client.login(token);
